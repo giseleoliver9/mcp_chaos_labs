@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+*.log
+.env
+.env.*
+!.env.example
+results/*.json
+results/*.jsonl
+!results/.gitkeep
