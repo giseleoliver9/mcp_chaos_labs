@@ -1,29 +1,26 @@
 # MCP Chaos Lab
 
-**What happens when a tool an AI agent depends on goes offline or returns broken data?**
+![Python 3.11+](docs/badges/python.svg) ![FastAPI](docs/badges/fastapi.svg) ![Pydantic](docs/badges/pydantic.svg) ![pytest](docs/badges/pytest.svg) ![Docker · opcional/optional](docs/badges/docker.svg)
 
-MCP Chaos Lab is a Python simulator for answering that question. It sends the same request to two strategies, injects a failure, and shows which one returns a structurally valid response, uses a backup, or stops. You can try it without Docker, an API key, or a live model.
+[![Português (BR)](docs/badges/lang-pt-br.svg)](README.md) [![English](docs/badges/lang-en.svg)](README.en.md) [![Español](docs/badges/lang-es.svg)](README.es.md) [![Français](docs/badges/lang-fr.svg)](README.fr.md) [![简体中文](docs/badges/lang-zh-cn.svg)](README.zh-CN.md)
 
-## MCP vs. this lab
+**O que acontece quando a ferramenta de um agente de IA sai do ar ou devolve dados inválidos?**
 
-[Model Context Protocol (MCP)](https://modelcontextprotocol.io/docs/learn/architecture) is a standard that lets a compatible AI application discover and call tools exposed by a server. For example, a weather MCP server could expose a read-only tool called `get_rainfall(neighborhood, date)` that calls an existing weather API and returns the amount, station, source, and timestamp. The REST API can stay as it is; the MCP server is the adapter for AI clients.
+O MCP Chaos Lab é um simulador em Python. Ele faz a mesma chamada com duas estratégias, provoca uma falha de propósito e mostra o que cada uma faz: retorna dados no formato esperado, recorre a uma alternativa ou interrompe a execução. Dá para testar sem Docker, chave de API ou modelo de IA.
 
-**This lab does not implement an MCP server or client.** It simulates MCP-style tool calls inside Python to test how an agent handles failures. Its optional FastAPI endpoints are ordinary HTTP endpoints, not an MCP transport. The retry, fallback, and stop rules are implemented in the lab; MCP itself does not supply them.
+## O que é MCP e o que este laboratório faz
 
-<details>
-<summary>Resumo em português</summary>
+[Model Context Protocol (MCP)](https://modelcontextprotocol.io/docs/learn/architecture) é um padrão para um app de IA descobrir e chamar as ferramentas que um servidor oferece. Por exemplo, um servidor MCP de clima pode oferecer a função de consulta `get_rainfall(neighborhood, date)`. Ela chama a API de clima que já existe e devolve o volume de chuva, a estação, a fonte e a hora da medição. A API REST continua como está. O servidor MCP faz a ponte com o app de IA.
 
-MCP é um padrão para conectar um app de IA às ferramentas de outros sistemas. O Chaos Lab não é um servidor MCP: ele simula chamadas para comparar o que acontece quando uma ferramenta demora, sai do ar, muda de formato ou devolve dados inválidos. Para experimentar agora, veja [como rodar no PowerShell](#run-locally).
+**O laboratório não implementa um servidor nem um cliente MCP.** As chamadas são simuladas dentro do Python para testar como o agente reage a falhas. As rotas opcionais do FastAPI são HTTP comum, não um transporte MCP. Repetir a chamada, usar uma alternativa (fallback) ou interromper são decisões do laboratório, não do protocolo.
 
-</details>
+## Demo de 30 segundos
 
-## Demo: tool unavailable (30 seconds)
+![Demo no terminal: a versão básica para quando a ferramenta fica indisponível. A versão resiliente usa uma alternativa simulada e para se os dados estiverem malformados.](docs/mcp-chaos-lab-demo.gif)
 
-![Terminal demo: the baseline stops on a mock outage; the resilient policy returns a simulated fallback and stops on malformed data.](docs/mcp-chaos-lab-demo.gif)
+As duas estratégias recebem a mesma busca e a mesma falha simulada. A básica devolve um erro. A resiliente devolve uma resposta alternativa e registra esse caminho. A resposta alternativa é de teste, não vem de um cache real. A validação verifica o formato, não se o conteúdo está correto ou atualizado. Se a resposta vem malformada, a estratégia resiliente para em vez de repassar dados inválidos.
 
-The two strategies receive the same mock search request and the same forced outage. The baseline returns an error; the resilient strategy returns a simulated fallback and logs that it used it. The fallback is a mock fixture, not a live cache. The schema check validates response structure, not correctness or freshness. For the malformed response shown in the demo, the resilient strategy stops instead of passing invalid data onward.
-
-Reproduce the three calls after installing the CLI (no API key, Docker, or live model required):
+Depois de [instalar a CLI](#instalação-da-cli), reproduza os três cenários:
 
 ```bash
 mcp-chaos execute --agent baseline --tool search --payload query=demo --failure unavailable
@@ -31,9 +28,9 @@ mcp-chaos execute --agent advanced --tool search --payload query=demo --failure 
 mcp-chaos execute --agent advanced --tool search --payload query=demo --failure malformed
 ```
 
-## Run locally
+## Como rodar
 
-**Requirements:** Python 3.11 or newer, and Git to clone. Without Git, choose **Code → Download ZIP** on GitHub, extract it, open the extracted folder, and start at `python -m venv .venv`.
+**Requisitos:** Python 3.11 ou mais recente e Git para clonar. Sem Git, escolha **Code → Download ZIP** no GitHub, extraia o ZIP, abra o terminal na pasta extraída e comece pelo comando que cria o ambiente virtual.
 
 ### Windows (PowerShell)
 
@@ -55,78 +52,78 @@ python3 -m venv .venv
 .venv/bin/python -m app.cli execute --agent advanced --tool search --payload query=demo --failure unavailable
 ```
 
-The command prints `Cached fallback result for: demo` and `"recovered": true`. The response is simulated. Change `advanced` to `baseline` for the same outage without recovery (`ToolUnavailableError`), or use `advanced` with `--failure malformed` to see the deliberate stop (`SafeAbortError`). Both error cases are expected and exit with code 1.
+O comando mostra `Cached fallback result for: demo` e `"recovered": true`. Troque `advanced` por `baseline` para ver a mesma falha sem recuperação (`ToolUnavailableError`). Use `advanced` com `--failure malformed` para ver a interrupção intencional (`SafeAbortError`). Nos dois cenários de erro, o código de saída esperado é 1.
 
-Run `python -m app.cli benchmark` or `python -m pytest` with the same virtual-environment Python to reproduce the benchmark or run the tests.
+Para reproduzir o benchmark ou rodar os testes, use o Python do mesmo ambiente virtual com `-m app.cli benchmark` ou `-m pytest`.
 
-## What It Tests
+## O que o laboratório testa
 
-The small Python runtime compares two strategies:
+O laboratório compara duas estratégias:
 
-- `BaselineAgent`: direct tool execution. If the tool fails, the task fails.
-- `ResilientAgent`: validates output, classifies failures, retries transient timeouts, routes to fallbacks, adapts known schema drift, and aborts safely on malformed data.
+- `BaselineAgent`: chama a ferramenta direto. Se ela falha, a tarefa falha.
+- `ResilientAgent`: valida a resposta, identifica a falha, repete chamadas que expiraram, usa uma alternativa quando a ferramenta está indisponível, adapta mudanças conhecidas de formato e para quando recebe dados malformados.
 
-Planning modes:
+Opções de planejamento:
 
-- `DeterministicPlanner`: reproducible task-to-tool planning for benchmarks.
-- `LLMPlanner`: provider-neutral adapter for a real LLM planner. The caller injects the completion function, so the project does not force one vendor.
+- `DeterministicPlanner`: escolhe a ferramenta para cada tarefa de forma reproduzível.
+- `LLMPlanner`: adaptador opcional para planejar com um modelo de linguagem. Quem chama fornece a função que consulta o modelo, sem depender de um provedor específico.
 
-The reliability benchmark calls mock tools directly without a planner or live model, to isolate behavior at the tool boundary. The separate `task` command exercises the planning layer.
+O benchmark chama ferramentas simuladas diretamente, sem planejador nem modelo real. Assim, mede só o comportamento na chamada da ferramenta. Para testar a etapa de planejamento, use o comando `task` à parte.
 
-Failure modes:
+Falhas simuladas:
 
-- `timeout`
-- `tool unavailable`
-- `malformed response`
-- `schema mismatch`
+- Tempo limite excedido (`timeout`)
+- Ferramenta indisponível (`unavailable`)
+- Resposta malformada (`malformed`)
+- Mudança no formato da resposta (`schema_mismatch`)
 
-Mock MCP-style tools:
+Ferramentas simuladas:
 
 - `calculator`
 - `search`
 - `weather`
 
-## Benchmark Results
+## Resultados do benchmark
 
-Generated with:
+Para reproduzir o cenário controlado:
 
 ```bash
 python run_benchmark.py
 ```
 
-100 matched simulated cases per strategy, seed `7`. Success means returning a response that passes structural validation:
+As duas estratégias passaram pelos mesmos 100 casos simulados, com a semente `7`. Sucesso aqui significa que a resposta passou na validação de formato.
 
-| Agent | Task Success | Recovery Rate | Safe Failure | Unsafe Response | Recovery Efficiency | Avg Tool Calls |
+| Estratégia | Sucesso | Recuperação | Falha segura | Resposta insegura | Eficiência da recuperação | Média de chamadas |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | Baseline | 25.0% | 0.0% | 50.7% | 37.0% | 0.0 | 1.0 |
 | Advanced | 75.0% | 66.7% | 100.0% | 0.0% | 1.0 | 1.5 |
 
-Improvement: `+50.0 percentage points`.
+A diferença foi de **50 pontos percentuais**: de 25% para 75%.
 
-The advanced agent still fails malformed responses intentionally. The point is not to hallucinate around bad data; it is to abort safely when recovery would be unsafe.
+O agente resiliente rejeita respostas malformadas de propósito. Parar nesse cenário evita que dados inválidos sigam para a próxima etapa.
 
-Seeded chaos benchmark, closer to production-style randomness:
+Também dá para variar as falhas em uma simulação pseudoaleatória, sem envolver produção:
 
 ```bash
 mcp-chaos benchmark --mode seeded --executions 500 --failure-probability 0.35
 ```
 
-Latest seeded run:
+Resultado da execução registrada com falhas pseudoaleatórias:
 
-| Agent | Task Success | Recovery Rate | Safe Failure | Unsafe Response | Recovery Efficiency | Avg Tool Calls |
+| Estratégia | Sucesso | Recuperação | Falha segura | Resposta insegura | Eficiência da recuperação | Média de chamadas |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | Baseline | 63.4% | 0.0% | 44.8% | 20.2% | 0.0 | 1.0 |
 | Advanced | 89.2% | 70.5% | 100.0% | 0.0% | 1.0 | 1.26 |
 
-## Install As A CLI
+## Instalação da CLI
 
-For local development:
+Com o ambiente virtual ativo, instale a CLI para desenvolvimento:
 
 ```bash
 pip install -e .[dev]
 ```
 
-Then use the terminal command:
+Depois, use os comandos no terminal:
 
 ```bash
 mcp-chaos-lab --version
@@ -135,33 +132,35 @@ mcp-chaos-lab benchmark
 mcp-chaos-lab benchmark --mode seeded --executions 500 --failure-probability 0.35
 ```
 
-There is also a shorter alias:
+O comando também tem uma versão curta:
 
 ```bash
 mcp-chaos benchmark
 ```
 
-Run one practical failure case:
+Para testar uma falha específica:
 
 ```bash
 mcp-chaos execute --agent advanced --tool search --payload query=order-12345 --failure unavailable
 ```
 
-That command simulates a tool outage and shows the resilient agent routing the request to fallback instead of crashing.
+Esse comando simula a indisponibilidade da ferramenta e mostra o agente resiliente usando a alternativa de teste.
 
-Run a natural-language task through the planner:
+Para executar uma tarefa em linguagem natural pelo planejador:
 
 ```bash
 mcp-chaos task "weather in Recife" --agent advanced --failure schema_mismatch
 ```
 
-Run the API:
+### API HTTP opcional
+
+Para iniciar a API:
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-Open:
+Rotas disponíveis:
 
 - `GET /health`
 - `GET /tools`
@@ -169,7 +168,7 @@ Open:
 - `POST /task`
 - `POST /benchmark`
 
-Example tool execution:
+Exemplo de execução direta (Prompt de Comando do Windows):
 
 ```bash
 curl -X POST http://127.0.0.1:8000/execute ^
@@ -177,7 +176,7 @@ curl -X POST http://127.0.0.1:8000/execute ^
   -d "{\"agent\":\"advanced\",\"tool_name\":\"calculator\",\"payload\":{\"a\":1,\"b\":2},\"failure\":\"schema_mismatch\"}"
 ```
 
-Example planned task:
+Exemplo com planejamento (Prompt de Comando do Windows):
 
 ```bash
 curl -X POST http://127.0.0.1:8000/task ^
@@ -185,30 +184,30 @@ curl -X POST http://127.0.0.1:8000/task ^
   -d "{\"agent\":\"advanced\",\"task\":\"weather in Recife\",\"failure\":\"schema_mismatch\"}"
 ```
 
-## Architecture
+## Arquitetura
 
 ```text
-Task
-  -> Agent Planner
-  -> Tool Selection
-  -> MCP Tool Layer
-  -> Chaos Injector
-       -> timeout
-       -> malformed response
-       -> tool unavailable
-       -> schema mismatch
-  -> Recovery Engine
-       -> retry
-       -> fallback
-       -> schema refresh
-       -> abort safely
-  -> Tool Result
-  -> Agent Final Response
-  -> Trajectory Logger / Evaluator
+Tarefa
+  -> Planejador do agente
+  -> Seleção da ferramenta
+  -> Camada de ferramentas simuladas
+  -> Injetor de falhas
+       -> tempo limite excedido
+       -> resposta malformada
+       -> ferramenta indisponível
+       -> mudança de formato
+  -> Regras de recuperação
+       -> repetir chamada
+       -> usar alternativa
+       -> adaptar formato conhecido
+       -> interromper com segurança
+  -> Resultado da ferramenta
+  -> Resposta final do agente
+  -> Registro e avaliação da execução
 ```
 
-## Why It Matters
+## Por que isso importa
 
-With the same simulated tool calls, the strategy with explicit recovery policies returned more structurally valid responses. This benchmark does not measure agent autonomy or reliability in production.
+Com as mesmas chamadas simuladas, a estratégia com regras explícitas de recuperação devolveu mais respostas no formato esperado. O teste não mede autonomia do agente nem confiabilidade em produção.
 
-The most reliable behavior was not "try harder". It was knowing when to retry, when to switch tools, when to adapt, and when to stop.
+O laboratório ajuda a separar quatro decisões: quando repetir, quando usar uma alternativa, quando adaptar a resposta e quando parar.
