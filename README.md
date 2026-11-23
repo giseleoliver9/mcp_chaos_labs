@@ -5,6 +5,20 @@ Most demos show agents in perfect infrastructure conditions. This project shows 
 
 The runtime architecture is a **Fault-Aware Agent Runtime**: an agent planning layer sits above explicit recovery policies at the tool boundary.
 
+## Demo: tool unavailable (30 seconds)
+
+![Terminal demo: the baseline stops on a mock outage; the resilient policy returns a simulated fallback and stops on malformed data.](docs/mcp-chaos-lab-demo.gif)
+
+The two strategies receive the same mock search request and the same forced outage. The baseline returns an error; the resilient strategy returns a simulated fallback and logs that it used it. The fallback is a mock fixture, not a live cache. The schema check validates response structure, not correctness or freshness. For the malformed response shown in the demo, the resilient strategy stops instead of passing invalid data onward.
+
+Reproduce the three calls after installing the CLI (no API key, Docker, or live model required):
+
+```bash
+mcp-chaos execute --agent baseline --tool search --payload query=demo --failure unavailable
+mcp-chaos execute --agent advanced --tool search --payload query=demo --failure unavailable
+mcp-chaos execute --agent advanced --tool search --payload query=demo --failure malformed
+```
+
 ## What It Tests
 
 The lab compares two agents:
@@ -17,7 +31,7 @@ Planning modes:
 - `DeterministicPlanner`: reproducible task-to-tool planning for benchmarks.
 - `LLMPlanner`: provider-neutral adapter for a real LLM planner. The caller injects the completion function, so the project does not force one vendor.
 
-The reliability benchmark intentionally uses deterministic planning to isolate infrastructure behavior. A separate LLM-backed demo can demonstrate the same recovery layer with an actual reasoning agent.
+The reliability benchmark calls mock tools directly without a planner or live model, to isolate behavior at the tool boundary. The separate `task` command exercises the planning layer.
 
 Failure modes:
 
@@ -40,7 +54,7 @@ Generated with:
 python run_benchmark.py
 ```
 
-100 executions, seed `7`:
+100 matched simulated cases per strategy, seed `7`. Success means returning a response that passes structural validation:
 
 | Agent | Task Success | Recovery Rate | Safe Failure | Unsafe Response | Recovery Efficiency | Avg Tool Calls |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -165,6 +179,6 @@ Task
 
 ## Why It Matters
 
-Increasing agent autonomy did not improve reliability. Explicit recovery policies at tool boundaries did.
+With the same simulated tool calls, the strategy with explicit recovery policies returned more structurally valid responses. This benchmark does not measure agent autonomy or reliability in production.
 
 The most reliable behavior was not "try harder". It was knowing when to retry, when to switch tools, when to adapt, and when to stop.
