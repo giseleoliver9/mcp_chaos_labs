@@ -14,6 +14,12 @@ Tool Failure Lab es un simulador en Python que permite responder a esa pregunta.
 
 **Este laboratorio no implementa un servidor ni un cliente MCP.** Simula llamadas a herramientas al estilo de MCP dentro de Python para comprobar cómo responde un agente ante fallos. Sus endpoints opcionales de FastAPI son endpoints HTTP convencionales, no un transporte MCP. Las reglas de reintento, recuperación mediante una alternativa y detención las implementa el laboratorio; no forman parte de MCP.
 
+## ¿Puedo corregir el problema?
+
+**Hoy, el laboratorio simula fallos dentro del propio laboratorio.** Te ayuda a reproducir y entender un fallo, pero no prueba tu aplicación directamente ni corrige el código por ti. El proceso es: **reproducir el fallo → corregir tu aplicación → repetir la prueba** para verificar su comportamiento.
+
+**Idea para un futuro modo HTTP (aún no disponible):** imagina que una tienda ficticia consulta el coste del envío por código postal. Un endpoint de prueba devolvería primero `502` y, en el siguiente intento, `200` con un coste de envío ficticio de **R$ 20**. Podrías observar cuántas solicitudes hizo la aplicación. Si se detuviera al recibir el primer error, podrías añadir un único reintento para ese `502` en la consulta, que es de solo lectura. Luego repetirías el escenario para comprobar que la aplicación hizo dos solicitudes y mostró el coste del envío. **Todavía no puedes conectar tu aplicación al laboratorio para ejecutar este escenario.**
+
 ## Demostración: herramienta no disponible (30 segundos)
 
 ![Demostración en la terminal: la estrategia base se detiene ante una interrupción simulada; la estrategia resiliente devuelve una respuesta alternativa simulada y se detiene ante datos malformados.](docs/tool-failure-lab-demo.gif)
