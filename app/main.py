@@ -12,7 +12,7 @@ from app.evaluation.runner import run_benchmark
 from app.tools.registry import FALLBACK_TOOLS, TOOLS, list_tools
 
 app = FastAPI(
-    title="MCP Chaos Lab",
+    title="Tool Failure Lab",
     description="Benchmark baseline and resilient agents under simulated MCP tool failures.",
     version="0.1.0",
 )

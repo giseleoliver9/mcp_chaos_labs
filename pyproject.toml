@@ -3,14 +3,14 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "mcp-chaos-lab"
+name = "tool-failure-lab"
 version = "0.1.0"
 description = "Agent reliability benchmark for simulated MCP tool failures."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [
-  { name = "MCP Chaos Lab contributors" }
+  { name = "Tool Failure Lab contributors" }
 ]
 dependencies = [
   "fastapi>=0.111,<1.0",
@@ -25,8 +25,7 @@ dev = [
 ]
 
 [project.scripts]
-mcp-chaos-lab = "app.cli:main"
-mcp-chaos = "app.cli:main"
+tool-failure-lab = "app.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["app*"]

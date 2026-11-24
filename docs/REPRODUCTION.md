@@ -32,17 +32,11 @@ pip install -e .[dev]
 Run:
 
 ```bash
-mcp-chaos-lab tools
-mcp-chaos-lab benchmark
-mcp-chaos-lab benchmark --mode seeded --executions 500 --failure-probability 0.35
-mcp-chaos-lab execute --agent advanced --tool calculator --payload a=1,b=2 --failure schema_mismatch
-mcp-chaos-lab task "weather in Recife" --agent advanced --failure schema_mismatch
-```
-
-Short alias:
-
-```bash
-mcp-chaos benchmark
+tool-failure-lab tools
+tool-failure-lab benchmark
+tool-failure-lab benchmark --mode seeded --executions 500 --failure-probability 0.35
+tool-failure-lab execute --agent advanced --tool calculator --payload a=1,b=2 --failure schema_mismatch
+tool-failure-lab task "weather in Recife" --agent advanced --failure schema_mismatch
 ```
 
 ## API
@@ -82,6 +76,6 @@ curl -X POST http://127.0.0.1:8000/execute ^
 ## Docker
 
 ```bash
-docker build -t mcp-chaos-lab .
-docker run --rm -p 8000:8000 mcp-chaos-lab
+docker build -t tool-failure-lab .
+docker run --rm -p 8000:8000 tool-failure-lab
 ```
