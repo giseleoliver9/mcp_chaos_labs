@@ -1,4 +1,4 @@
-# MCP Chaos Lab
+# Tool Failure Lab
 
 ![Python 3.11+](docs/badges/python.svg) ![FastAPI](docs/badges/fastapi.svg) ![Pydantic](docs/badges/pydantic.svg) ![pytest](docs/badges/pytest.svg) ![Docker · opcional/optional](docs/badges/docker.svg)
 
@@ -6,7 +6,7 @@
 
 **What happens when a tool an AI agent depends on goes offline or returns broken data?**
 
-MCP Chaos Lab is a Python simulator for answering that question. It sends the same request to two strategies, injects a failure, and shows which one returns a structurally valid response, uses a backup, or stops. You can try it without Docker, an API key, or a live model.
+Tool Failure Lab is a Python simulator for answering that question. It sends the same request to two strategies, injects a failure, and shows which one returns a structurally valid response, uses a backup, or stops. You can try it without Docker, an API key, or a live model.
 
 ## MCP vs. this lab
 
@@ -16,16 +16,16 @@ MCP Chaos Lab is a Python simulator for answering that question. It sends the sa
 
 ## Demo: tool unavailable (30 seconds)
 
-![Terminal demo: the baseline stops on a mock outage; the resilient policy returns a simulated fallback and stops on malformed data.](docs/mcp-chaos-lab-demo.gif)
+![Terminal demo: the baseline stops on a mock outage; the resilient policy returns a simulated fallback and stops on malformed data.](docs/tool-failure-lab-demo.gif)
 
 The two strategies receive the same mock search request and the same forced outage. The baseline returns an error; the resilient strategy returns a simulated fallback and logs that it used it. The fallback is a mock fixture, not a live cache. The schema check validates response structure, not correctness or freshness. For the malformed response shown in the demo, the resilient strategy stops instead of passing invalid data onward.
 
 Reproduce the three calls after installing the CLI (no API key, Docker, or live model required):
 
 ```bash
-mcp-chaos execute --agent baseline --tool search --payload query=demo --failure unavailable
-mcp-chaos execute --agent advanced --tool search --payload query=demo --failure unavailable
-mcp-chaos execute --agent advanced --tool search --payload query=demo --failure malformed
+tool-failure-lab execute --agent baseline --tool search --payload query=demo --failure unavailable
+tool-failure-lab execute --agent advanced --tool search --payload query=demo --failure unavailable
+tool-failure-lab execute --agent advanced --tool search --payload query=demo --failure malformed
 ```
 
 ## Run locally
@@ -35,8 +35,8 @@ mcp-chaos execute --agent advanced --tool search --payload query=demo --failure 
 ### Windows (PowerShell)
 
 ```powershell
-git clone https://github.com/giseleoliver9/mcp_chaos_labs.git
-cd mcp_chaos_labs
+git clone https://github.com/giseleoliver9/tool-failure-lab.git
+cd tool-failure-lab
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 .\.venv\Scripts\python.exe -m app.cli execute --agent advanced --tool search --payload query=demo --failure unavailable
@@ -45,8 +45,8 @@ python -m venv .venv
 ### macOS / Linux
 
 ```bash
-git clone https://github.com/giseleoliver9/mcp_chaos_labs.git
-cd mcp_chaos_labs
+git clone https://github.com/giseleoliver9/tool-failure-lab.git
+cd tool-failure-lab
 python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
 .venv/bin/python -m app.cli execute --agent advanced --tool search --payload query=demo --failure unavailable
@@ -105,7 +105,7 @@ The advanced agent still fails malformed responses intentionally. The point is n
 Seeded chaos benchmark, closer to production-style randomness:
 
 ```bash
-mcp-chaos benchmark --mode seeded --executions 500 --failure-probability 0.35
+tool-failure-lab benchmark --mode seeded --executions 500 --failure-probability 0.35
 ```
 
 Latest seeded run:
@@ -126,22 +126,16 @@ pip install -e .[dev]
 Then use the terminal command:
 
 ```bash
-mcp-chaos-lab --version
-mcp-chaos-lab tools
-mcp-chaos-lab benchmark
-mcp-chaos-lab benchmark --mode seeded --executions 500 --failure-probability 0.35
-```
-
-There is also a shorter alias:
-
-```bash
-mcp-chaos benchmark
+tool-failure-lab --version
+tool-failure-lab tools
+tool-failure-lab benchmark
+tool-failure-lab benchmark --mode seeded --executions 500 --failure-probability 0.35
 ```
 
 Run one practical failure case:
 
 ```bash
-mcp-chaos execute --agent advanced --tool search --payload query=order-12345 --failure unavailable
+tool-failure-lab execute --agent advanced --tool search --payload query=order-12345 --failure unavailable
 ```
 
 That command simulates a tool outage and shows the resilient agent routing the request to fallback instead of crashing.
@@ -149,7 +143,7 @@ That command simulates a tool outage and shows the resilient agent routing the r
 Run a natural-language task through the planner:
 
 ```bash
-mcp-chaos task "weather in Recife" --agent advanced --failure schema_mismatch
+tool-failure-lab task "weather in Recife" --agent advanced --failure schema_mismatch
 ```
 
 Run the API:

@@ -23,7 +23,7 @@ def main(argv: list[str] | None = None) -> int:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="mcp-chaos-lab",
+        prog="tool-failure-lab",
         description="Run agent reliability experiments against simulated MCP tool failures.",
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {VERSION}")

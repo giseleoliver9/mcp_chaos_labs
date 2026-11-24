@@ -1,4 +1,4 @@
-# MCP Chaos Lab
+# Tool Failure Lab
 
 ![Python 3.11+](docs/badges/python.svg) ![FastAPI](docs/badges/fastapi.svg) ![Pydantic](docs/badges/pydantic.svg) ![pytest](docs/badges/pytest.svg) ![Docker · opcional/optional](docs/badges/docker.svg)
 
@@ -6,7 +6,7 @@
 
 **¿Qué pasa cuando una herramienta de la que depende un agente de IA deja de funcionar o devuelve datos inválidos?**
 
-MCP Chaos Lab es un simulador en Python que permite responder a esa pregunta. Envía la misma solicitud a dos estrategias, inyecta un fallo y muestra cuál devuelve una respuesta estructuralmente válida, recurre a una alternativa o se detiene. Puedes probarlo sin Docker, sin clave de API y sin un modelo en ejecución.
+Tool Failure Lab es un simulador en Python que permite responder a esa pregunta. Envía la misma solicitud a dos estrategias, inyecta un fallo y muestra cuál devuelve una respuesta estructuralmente válida, recurre a una alternativa o se detiene. Puedes probarlo sin Docker, sin clave de API y sin un modelo en ejecución.
 
 ## MCP y este laboratorio
 
@@ -16,16 +16,16 @@ MCP Chaos Lab es un simulador en Python que permite responder a esa pregunta. En
 
 ## Demostración: herramienta no disponible (30 segundos)
 
-![Demostración en la terminal: la estrategia base se detiene ante una interrupción simulada; la estrategia resiliente devuelve una respuesta alternativa simulada y se detiene ante datos malformados.](docs/mcp-chaos-lab-demo.gif)
+![Demostración en la terminal: la estrategia base se detiene ante una interrupción simulada; la estrategia resiliente devuelve una respuesta alternativa simulada y se detiene ante datos malformados.](docs/tool-failure-lab-demo.gif)
 
 Las dos estrategias reciben la misma solicitud de búsqueda simulada y el mismo fallo forzado. La estrategia base devuelve un error; la resiliente devuelve una respuesta alternativa simulada y registra que la usó. La alternativa es un dato de prueba, no una caché real. La comprobación del esquema valida la estructura de la respuesta, no su exactitud ni su vigencia. Ante la respuesta malformada que se muestra en la demostración, la estrategia resiliente se detiene en lugar de propagar datos inválidos.
 
 Reproduce las tres llamadas tras instalar la CLI (no necesitas una clave de API, Docker ni un modelo en ejecución):
 
 ```bash
-mcp-chaos execute --agent baseline --tool search --payload query=demo --failure unavailable
-mcp-chaos execute --agent advanced --tool search --payload query=demo --failure unavailable
-mcp-chaos execute --agent advanced --tool search --payload query=demo --failure malformed
+tool-failure-lab execute --agent baseline --tool search --payload query=demo --failure unavailable
+tool-failure-lab execute --agent advanced --tool search --payload query=demo --failure unavailable
+tool-failure-lab execute --agent advanced --tool search --payload query=demo --failure malformed
 ```
 
 ## Ejecución local
@@ -35,8 +35,8 @@ mcp-chaos execute --agent advanced --tool search --payload query=demo --failure 
 ### Windows (PowerShell)
 
 ```powershell
-git clone https://github.com/giseleoliver9/mcp_chaos_labs.git
-cd mcp_chaos_labs
+git clone https://github.com/giseleoliver9/tool-failure-lab.git
+cd tool-failure-lab
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 .\.venv\Scripts\python.exe -m app.cli execute --agent advanced --tool search --payload query=demo --failure unavailable
@@ -45,8 +45,8 @@ python -m venv .venv
 ### macOS / Linux
 
 ```bash
-git clone https://github.com/giseleoliver9/mcp_chaos_labs.git
-cd mcp_chaos_labs
+git clone https://github.com/giseleoliver9/tool-failure-lab.git
+cd tool-failure-lab
 python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
 .venv/bin/python -m app.cli execute --agent advanced --tool search --payload query=demo --failure unavailable
@@ -105,7 +105,7 @@ El agente avanzado sigue fallando deliberadamente ante respuestas malformadas. E
 Benchmark de fallos aleatorios con semilla, más parecido a la variabilidad de un entorno de producción:
 
 ```bash
-mcp-chaos benchmark --mode seeded --executions 500 --failure-probability 0.35
+tool-failure-lab benchmark --mode seeded --executions 500 --failure-probability 0.35
 ```
 
 Última ejecución con semilla:
@@ -126,22 +126,16 @@ pip install -e .[dev]
 Luego, usa estos comandos en la terminal:
 
 ```bash
-mcp-chaos-lab --version
-mcp-chaos-lab tools
-mcp-chaos-lab benchmark
-mcp-chaos-lab benchmark --mode seeded --executions 500 --failure-probability 0.35
-```
-
-También hay un alias más corto:
-
-```bash
-mcp-chaos benchmark
+tool-failure-lab --version
+tool-failure-lab tools
+tool-failure-lab benchmark
+tool-failure-lab benchmark --mode seeded --executions 500 --failure-probability 0.35
 ```
 
 Prueba un caso de fallo concreto:
 
 ```bash
-mcp-chaos execute --agent advanced --tool search --payload query=order-12345 --failure unavailable
+tool-failure-lab execute --agent advanced --tool search --payload query=order-12345 --failure unavailable
 ```
 
 El comando simula la caída de una herramienta y muestra cómo el agente resiliente redirige la solicitud a una alternativa en lugar de fallar.
@@ -149,7 +143,7 @@ El comando simula la caída de una herramienta y muestra cómo el agente resilie
 Ejecuta una tarea en lenguaje natural mediante el planificador:
 
 ```bash
-mcp-chaos task "weather in Recife" --agent advanced --failure schema_mismatch
+tool-failure-lab task "weather in Recife" --agent advanced --failure schema_mismatch
 ```
 
 Inicia la API:

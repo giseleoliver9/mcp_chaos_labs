@@ -1,1 +1,1 @@
-"""MCP Chaos Lab application package."""
+"""Tool Failure Lab application package."""

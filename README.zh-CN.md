@@ -1,4 +1,4 @@
-# MCP Chaos Lab
+# Tool Failure Lab
 
 ![Python 3.11+](docs/badges/python.svg) ![FastAPI](docs/badges/fastapi.svg) ![Pydantic](docs/badges/pydantic.svg) ![pytest](docs/badges/pytest.svg) ![Docker · opcional/optional](docs/badges/docker.svg)
 
@@ -6,7 +6,7 @@
 
 **当 AI 智能体依赖的工具下线或返回损坏的数据时，会发生什么？**
 
-MCP Chaos Lab 是一个用 Python 编写的模拟器，用来回答这个问题。它向两种策略发送相同的请求，注入故障，再展示哪种策略能返回结构有效的响应、使用备用结果，或停止执行。无需 Docker、API 密钥或真实模型即可体验。
+Tool Failure Lab 是一个用 Python 编写的模拟器，用来回答这个问题。它向两种策略发送相同的请求，注入故障，再展示哪种策略能返回结构有效的响应、使用备用结果，或停止执行。无需 Docker、API 密钥或真实模型即可体验。
 
 ## MCP 与本实验室
 
@@ -16,16 +16,16 @@ MCP Chaos Lab 是一个用 Python 编写的模拟器，用来回答这个问题�
 
 ## 演示：工具不可用（30 秒）
 
-![终端演示：基线策略遇到模拟故障时停止；弹性策略返回模拟的备用结果，并在数据格式错误时停止。](docs/mcp-chaos-lab-demo.gif)
+![终端演示：基线策略遇到模拟故障时停止；弹性策略返回模拟的备用结果，并在数据格式错误时停止。](docs/tool-failure-lab-demo.gif)
 
 两种策略收到相同的模拟搜索请求，并遭遇相同的强制故障。基线策略返回错误；弹性策略返回模拟的备用结果，并在日志中记录这次回退。备用结果来自模拟测试数据，不是真实缓存。模式校验只检查响应结构，不验证内容是否正确或最新。对于演示中的格式错误响应，弹性策略会停止，而不会把无效数据继续传下去。
 
 安装 CLI 后，可复现这三次调用（无需 API 密钥、Docker 或真实模型）：
 
 ```bash
-mcp-chaos execute --agent baseline --tool search --payload query=demo --failure unavailable
-mcp-chaos execute --agent advanced --tool search --payload query=demo --failure unavailable
-mcp-chaos execute --agent advanced --tool search --payload query=demo --failure malformed
+tool-failure-lab execute --agent baseline --tool search --payload query=demo --failure unavailable
+tool-failure-lab execute --agent advanced --tool search --payload query=demo --failure unavailable
+tool-failure-lab execute --agent advanced --tool search --payload query=demo --failure malformed
 ```
 
 ## 在本地运行
@@ -35,8 +35,8 @@ mcp-chaos execute --agent advanced --tool search --payload query=demo --failure 
 ### Windows（PowerShell）
 
 ```powershell
-git clone https://github.com/giseleoliver9/mcp_chaos_labs.git
-cd mcp_chaos_labs
+git clone https://github.com/giseleoliver9/tool-failure-lab.git
+cd tool-failure-lab
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 .\.venv\Scripts\python.exe -m app.cli execute --agent advanced --tool search --payload query=demo --failure unavailable
@@ -45,8 +45,8 @@ python -m venv .venv
 ### macOS / Linux
 
 ```bash
-git clone https://github.com/giseleoliver9/mcp_chaos_labs.git
-cd mcp_chaos_labs
+git clone https://github.com/giseleoliver9/tool-failure-lab.git
+cd tool-failure-lab
 python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
 .venv/bin/python -m app.cli execute --agent advanced --tool search --payload query=demo --failure unavailable
@@ -105,7 +105,7 @@ python run_benchmark.py
 使用固定种子的混沌基准测试，更接近生产环境中的随机性：
 
 ```bash
-mcp-chaos benchmark --mode seeded --executions 500 --failure-probability 0.35
+tool-failure-lab benchmark --mode seeded --executions 500 --failure-probability 0.35
 ```
 
 最近一次固定种子测试结果：
@@ -126,22 +126,16 @@ pip install -e .[dev]
 然后在终端中运行：
 
 ```bash
-mcp-chaos-lab --version
-mcp-chaos-lab tools
-mcp-chaos-lab benchmark
-mcp-chaos-lab benchmark --mode seeded --executions 500 --failure-probability 0.35
-```
-
-也可以使用更短的别名：
-
-```bash
-mcp-chaos benchmark
+tool-failure-lab --version
+tool-failure-lab tools
+tool-failure-lab benchmark
+tool-failure-lab benchmark --mode seeded --executions 500 --failure-probability 0.35
 ```
 
 运行一个实际的故障示例：
 
 ```bash
-mcp-chaos execute --agent advanced --tool search --payload query=order-12345 --failure unavailable
+tool-failure-lab execute --agent advanced --tool search --payload query=order-12345 --failure unavailable
 ```
 
 该命令模拟工具服务中断，并展示弹性智能体如何把请求转到备用路径，而不是直接崩溃。
@@ -149,7 +143,7 @@ mcp-chaos execute --agent advanced --tool search --payload query=order-12345 --f
 通过规划器执行自然语言任务：
 
 ```bash
-mcp-chaos task "weather in Recife" --agent advanced --failure schema_mismatch
+tool-failure-lab task "weather in Recife" --agent advanced --failure schema_mismatch
 ```
 
 启动 API：
