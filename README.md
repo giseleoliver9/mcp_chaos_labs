@@ -14,6 +14,12 @@ O Tool Failure Lab é um simulador em Python. Ele faz a mesma chamada com duas e
 
 **O laboratório não implementa um servidor nem um cliente MCP.** As chamadas são simuladas dentro do Python para testar como o agente reage a falhas. As rotas opcionais do FastAPI são HTTP comum, não um transporte MCP. Repetir a chamada, usar uma alternativa (fallback) ou interromper são decisões do laboratório, não do protocolo.
 
+## Dá para corrigir o problema?
+
+**Hoje, o Lab simula falhas dentro do próprio laboratório.** Ele ajuda a reproduzir e entender o problema, mas não testa seu app diretamente nem corrige o código por você. O fluxo é: **reproduzir a falha → corrigir no seu app → repetir o teste** para conferir o comportamento.
+
+**Ideia para um futuro modo HTTP (ainda não disponível):** imagine uma loja fictícia consultando o frete por CEP. Um endpoint de teste devolveria primeiro `502` e, na próxima tentativa, `200` com um frete fictício de **R$ 20**. Você observaria quantas chamadas o app fez. Se ele parasse no primeiro erro, poderia adicionar um único reintento para esse `502` na consulta, que é só de leitura. Depois, repetiria o cenário para verificar que o app fez duas chamadas e exibiu o frete. **Ainda não dá para apontar seu app para o Lab para rodar esse cenário.**
+
 ## Demo de 30 segundos
 
 ![Demo no terminal: a versão básica para quando a ferramenta fica indisponível. A versão resiliente usa uma alternativa simulada e para se os dados estiverem malformados.](docs/tool-failure-lab-demo.gif)

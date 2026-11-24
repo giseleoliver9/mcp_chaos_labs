@@ -14,6 +14,12 @@ Tool Failure Lab is a Python simulator for answering that question. It sends the
 
 **This lab does not implement an MCP server or client.** It simulates MCP-style tool calls inside Python to test how an agent handles failures. Its optional FastAPI endpoints are ordinary HTTP endpoints, not an MCP transport. The retry, fallback, and stop rules are implemented in the lab; MCP itself does not supply them.
 
+## Can I fix the problem?
+
+**Today, the lab simulates failures inside the lab itself.** It helps you reproduce and understand a failure, but it does not test your app directly or fix your code for you. The workflow is: **reproduce the failure → fix your app → rerun the test** to verify what it does.
+
+**Idea for a future HTTP mode (not available yet):** imagine a fictional store looking up shipping by postal code. A test endpoint would return `502` first, then `200` with a fictional **R$ 20** shipping fee on the next attempt. You would observe how many requests your app made. If it stopped at the first error, you could add a single retry for that `502` on the read-only lookup. Then you would rerun the scenario to check that the app made two requests and displayed the shipping fee. **You cannot point your app at the lab to run this scenario yet.**
+
 ## Demo: tool unavailable (30 seconds)
 
 ![Terminal demo: the baseline stops on a mock outage; the resilient policy returns a simulated fallback and stops on malformed data.](docs/tool-failure-lab-demo.gif)

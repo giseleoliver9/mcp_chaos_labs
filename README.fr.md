@@ -14,6 +14,12 @@ Le [Model Context Protocol (MCP)](https://modelcontextprotocol.io/docs/learn/arc
 
 **Ce laboratoire n’implémente ni serveur ni client MCP.** Il simule des appels d’outils de type MCP dans Python afin de tester la gestion des pannes par un agent. Les points d’accès FastAPI facultatifs sont des points d’accès HTTP ordinaires, pas un mécanisme de transport MCP. Les règles de nouvelle tentative, de repli et d’arrêt sont implémentées dans le laboratoire ; MCP ne les fournit pas.
 
+## Puis-je corriger le problème ?
+
+**Aujourd’hui, le laboratoire simule les pannes dans son propre environnement.** Il aide à reproduire et à comprendre une panne, mais ne teste pas directement votre application et ne corrige pas le code à votre place. La démarche : **reproduire la panne → corriger votre application → relancer le test** pour vérifier son comportement.
+
+**Idée pour un futur mode HTTP (pas encore disponible) :** imaginez une boutique fictive qui calcule les frais de livraison à partir d’un code postal. Un endpoint de test renverrait d’abord `502`, puis `200` à la tentative suivante, avec des frais fictifs de **R$ 20**. Vous pourriez observer combien de requêtes votre application envoie. Si elle s’arrêtait à la première erreur, vous pourriez ajouter une seule nouvelle tentative pour ce `502` dans cette consultation en lecture seule. Vous relanceriez ensuite le scénario pour vérifier que l’application a fait deux requêtes et affiché les frais de livraison. **Vous ne pouvez pas encore connecter votre application au laboratoire pour exécuter ce scénario.**
+
 ## Démonstration : outil indisponible (30 secondes)
 
 ![Démonstration dans le terminal : la stratégie de référence s’arrête lors d’une panne simulée ; la stratégie résiliente utilise un résultat de repli simulé et s’arrête face à des données mal formées.](docs/tool-failure-lab-demo.gif)
